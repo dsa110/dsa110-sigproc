@@ -126,9 +126,9 @@ int main (int argc, char** argv){
     start_clock(CLK_setup);
 
     // set up fftw to run in multi-threaded mode.
-    fftwf_init_threads();
+    //fftwf_init_threads();
     //fftwf_plan_with_nthreads(omp_get_max_threads());
-    fftwf_plan_with_nthreads(1);
+    //fftwf_plan_with_nthreads(1);
 
     // read command line parameters
     in_snr=getF("--snr","-s",argc,argv,in_snr);

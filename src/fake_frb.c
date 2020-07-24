@@ -104,7 +104,7 @@ main (int argc, char *argv[])
 				psrdm=atof(argv[i]);
 			} else if (strings_equal(argv[i],"-width")) {
 				i++;
-				dc=atof(argv[i])/1000.0;
+				dc=atof(argv[i]);
 			} else if (strings_equal(argv[i],"-tsamp")) {
 				i++;
 				tsamp=1.0e-6*atof(argv[i]);
@@ -255,7 +255,7 @@ main (int argc, char *argv[])
 					  }
 					  else pulse = 0.0;
 					  
-						if (period > 0.0) {
+						if (period < 0.0) {
 							pulsephase=(faketime+shift[c])/period;
 							pulsephase=pulsephase-floor(pulsephase);
 							if ( (pulsephase>=rising) && (pulsephase<=trailing) ) {
