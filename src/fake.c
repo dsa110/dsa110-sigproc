@@ -29,10 +29,10 @@ FILE *output;
 
 main (int argc, char *argv[])
 {
-	int i,c,j,k,s,swapout,smear,nsblk=512,ic,arraysize,evenodd,headerless;
+  int i,c,j,k,s,bbm,swapout,smear,ic,arraysize,evenodd,headerless;
 	float pulse,snr,min=-4.0,max=4.0;
 	char string[80];
-	double psrdm,faketime,obstime,period,pulsephase,rising,trailing,dc,*shift, tpulse;
+	double psrdm,faketime,prev_faketime,obstime,period,pulsephase,rising,trailing,dc,*shift, tpulse;
 	double nexttime,timestep,tdm,p0,pdot,accn,speed_of_light=299792458.0,plst;
 	long seed;
 	float *fblock;
@@ -75,7 +75,10 @@ main (int argc, char *argv[])
 	rwalk=0.0;
 	rwsum=0;
 	tpulse = 0.0;
-	
+
+	/* for multiple beams */
+	int nbeam = 1;
+	int nsblk = 512;
 	
 	/* parse the command line if specified */
 	if (argc>1) {
@@ -84,6 +87,12 @@ main (int argc, char *argv[])
 			if (strings_equal(argv[i],"-nchans")) {
 				i++;
 				nchans=atoi(argv[i]);
+			} else if (strings_equal(argv[i],"-nbeams")) {
+			  i++;
+			  nbeams = atoi(argv[i]);
+			} else if (strings_equal(argv[i],"-nsblk")) {
+			  i++;
+			  nsblk = atoi(argv[i]);
 			} else if (strings_equal(argv[i],"-period")) {
 				i++;
 				period=1.0e-3*atof(argv[i]);
@@ -211,6 +220,8 @@ main (int argc, char *argv[])
 		send_string(source_name);
 		send_int("machine_id",machine_id);
 		send_int("telescope_id",telescope_id);
+		//send_int("nbeams",nbeams);
+		//send_int("nsblk",nsblk);
 		if (nchans > 1) { 
 			send_int("data_type",1);
 		} else {
@@ -235,7 +246,10 @@ main (int argc, char *argv[])
 
 	/* main loop */
 	do  {
-		for (s=0;s<nsblk;s++) {
+	  prev_faketime=faketime;
+	  for (bbm=0;bbm<nbeams;bbm++) {
+	    faketime=prev_faketime;
+	    for (s=0;s<nsblk;s++) {
 			faketime+=tsamp;
 			if (rwalk != 0.0){
 				if (gasdev(&seed) > 2.8)rwalk=-rwalk;
@@ -307,6 +321,7 @@ main (int argc, char *argv[])
 				error_message(string);
 				break;
 		}
+	  }
 	} while (faketime < obstime);
 
 	/* all done, update log, close all files and exit normally */
